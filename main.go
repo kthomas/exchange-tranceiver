@@ -40,7 +40,7 @@ func bootstrap() {
 
 func setupLogging() {
 	prefix := "exchange-transceiver"
-	lvl := "WARNING"
+	lvl := "INFO"
 	console := true
 
 	Log = logger.NewLogger(prefix, lvl, console)
