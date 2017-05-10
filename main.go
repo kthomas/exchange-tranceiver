@@ -26,6 +26,7 @@ var (
 		"ETH-BTC": GdaxFactory("ETH", "BTC"),
 
 		"USD-CNY": OandaFactory("USD", "CNY"),
+		"USD-JPY": OandaFactory("USD", "JPY"),
 	}
 )
 
