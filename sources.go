@@ -21,6 +21,7 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 			if err != nil {
 				Log.Errorf("Failed to establish websocket connection to ws-feed.gdax.com")
 			} else {
+				defer wsConn.Close()
 				subscribe := map[string]interface{}{
 					"type": "subscribe",
 					"product_ids": []string{currencyPair},
@@ -30,7 +31,7 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 				} else {
 					Log.Debugf("Subscribed to %s GDAX websocket", currencyPair)
 
-					for true {
+					for {
 						_, message, err := wsConn.ReadMessage()
 						if err != nil {
 							Log.Errorf("Failed to receive message on GDAX websocket; %s", err)
