@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -90,13 +89,11 @@ func OandaFactory(base string, counter string) *StreamingDataSource {
 					defer res.Body.Close()
 					reader := bufio.NewReader(res.Body)
 
-					ticker := time.NewTicker(25 * time.Millisecond)
-					select {
-					case <-ticker.C:
+					for {
 						message, err := reader.ReadBytes('\n')
 						if err != nil {
 							Log.Errorf("Failed to receive message from OANDA stream; %s", err)
-							ticker.Stop()
+							break
 						} else {
 							Log.Debugf("Received message from OANDA stream: %s", message)
 							ch <-&message
