@@ -1,7 +1,12 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -37,6 +42,63 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 							Log.Errorf("Failed to receive message on GDAX websocket; %s", err)
 						} else {
 							Log.Debugf("Received message on GDAX websocket: %s", message)
+							ch <-&message
+						}
+					}
+				}
+			}
+			return err
+		},
+	}
+}
+
+func OandaFactory(base string, counter string) *StreamingDataSource {
+	currencyPair := fmt.Sprintf("%s-%s", base, counter)
+	return &StreamingDataSource{
+		AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
+		AmqpExchange: "ticker",
+		AmqpExchangeType: "topic",
+		AmqpExchangeDurable: true,
+		AmqpQueue: currencyPair,
+
+		Stream: func(ch chan *[]byte) error {
+			var accountId string
+			var accessToken string
+			if os.Getenv("OANDA_API_ACCOUNT_ID") != "" {
+				accountId = os.Getenv("OANDA_API_ACCOUNT_ID")
+			}
+			if os.Getenv("OANDA_API_ACCESS_TOKEN") != "" {
+				accessToken = os.Getenv("OANDA_API_ACCESS_TOKEN")
+			}
+			if accountId == "" || accessToken == "" {
+				Log.Warningf("OANDA_API_ACCOUNT_ID and/or OANDA_API_ACCESS_TOKEN invalid for currency pair %s/%s", base, counter)
+				return errors.New("OANDA_API_ACCOUNT_ID and/or OANDA_API_ACCESS_TOKEN invalid")
+			}
+
+			client := &http.Client{}
+			queryString := fmt.Sprintf("instruments=%s_%s", base, counter)
+			url := fmt.Sprintf("https://stream-fxtrade.oanda.com/v3/accounts/%s/pricing/stream?%s", accountId, queryString)
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				Log.Errorf("Failed to create request for streaming from OANDA stream-fxtrade.oanda.com")
+			} else {
+				req.Header.Set("authorization", fmt.Sprintf("bearer %s", accessToken))
+				res, err := client.Do(req)
+				if err != nil {
+					Log.Errorf("Failed to establish connection to OANDA stream-fxtrade.oanda.com")
+				} else {
+					defer res.Body.Close()
+					reader := bufio.NewReader(res.Body)
+
+					ticker := time.NewTicker(25 * time.Millisecond)
+					select {
+					case <-ticker.C:
+						message, err := reader.ReadBytes('\n')
+						if err != nil {
+							Log.Errorf("Failed to receive message from OANDA stream; %s", err)
+							ticker.Stop()
+						} else {
+							Log.Debugf("Received message from OANDA stream: %s", message)
 							ch <-&message
 						}
 					}
