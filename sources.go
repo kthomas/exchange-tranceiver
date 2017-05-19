@@ -8,16 +8,20 @@ import (
 	"os"
 
 	"github.com/gorilla/websocket"
+	"github.com/kthomas/go-amqputil"
 )
 
 func GdaxFactory(base string, counter string) *StreamingDataSource {
 	currencyPair := fmt.Sprintf("%s-%s", base, counter)
 	return &StreamingDataSource{
-		AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
-		AmqpExchange: "ticker",
-		AmqpExchangeType: "topic",
-		AmqpExchangeDurable: true,
-		AmqpQueue: currencyPair,
+		DestinationAmqpConfig: &amqputil.AmqpConfig{
+			AmqpUrl: os.Getenv("AMQP_URL"),
+			AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
+			AmqpExchange: "ticker",
+			AmqpExchangeType: "topic",
+			AmqpExchangeDurable: true,
+			AmqpQueue: currencyPair,
+		},
 
 		Stream: func(ch chan *[]byte) error {
 			var wsDialer websocket.Dialer
@@ -54,11 +58,14 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 func OandaFactory(base string, counter string) *StreamingDataSource {
 	currencyPair := fmt.Sprintf("%s-%s", base, counter)
 	return &StreamingDataSource{
-		AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
-		AmqpExchange: "ticker",
-		AmqpExchangeType: "topic",
-		AmqpExchangeDurable: true,
-		AmqpQueue: currencyPair,
+		DestinationAmqpConfig: &amqputil.AmqpConfig{
+			AmqpUrl: os.Getenv("AMQP_URL"),
+			AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
+			AmqpExchange: "ticker",
+			AmqpExchangeType: "topic",
+			AmqpExchangeDurable: true,
+			AmqpQueue: currencyPair,
+		},
 
 		Stream: func(ch chan *[]byte) error {
 			var accountId string
