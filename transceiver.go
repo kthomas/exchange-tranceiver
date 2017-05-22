@@ -46,7 +46,10 @@ func (t *Transceiver) stream() {
 	t.wg.Add(1)
 	go func() {
 		defer t.wg.Done()
-		t.dataSource.Stream(t.queue)
+		for {
+			err := t.dataSource.Stream(t.queue)
+			t.log.Warningf("Streaming data source returned error %s%; restarting stream...", err)
+		}
 	}()
 }
 

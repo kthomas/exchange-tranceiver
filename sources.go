@@ -43,6 +43,7 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 						_, message, err := wsConn.ReadMessage()
 						if err != nil {
 							Log.Errorf("Failed to receive message on GDAX websocket; %s", err)
+							break
 						} else {
 							Log.Debugf("Received message on GDAX websocket: %s", message)
 							ch <-&message
