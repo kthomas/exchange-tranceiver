@@ -14,20 +14,22 @@ import (
 )
 
 var (
-	Shutdown context.Context
-	CancelF context.CancelFunc
-	Closing uint32
+	Shutdown  context.Context
+	CancelF   context.CancelFunc
+	Closing   uint32
 	WaitGroup sync.WaitGroup
-	Log *logger.Logger
+	Log       *logger.Logger
 
 	CurrencyPairs = map[string]*StreamingDataSource{
 		"BTC-USD": GdaxFactory("BTC", "USD"),
 		"ETH-USD": GdaxFactory("ETH", "USD"),
 		"ETH-BTC": GdaxFactory("ETH", "BTC"),
+		"LTC-USD": GdaxFactory("LTC", "USD"),
+		"LTC-BTC": GdaxFactory("LTC", "BTC"),
 
-		"EUR-USD": OandaFactory("EUR", "USD"),
-		"USD-CNY": OandaFactory("USD", "CNY"),
-		"USD-JPY": OandaFactory("USD", "JPY"),
+		// "EUR-USD": OandaFactory("EUR", "USD"),
+		// "USD-CNY": OandaFactory("USD", "CNY"),
+		// "USD-JPY": OandaFactory("USD", "JPY"),
 	}
 )
 
@@ -86,7 +88,7 @@ func runTransceiver(dataSource *StreamingDataSource) {
 	go func() {
 		defer WaitGroup.Done()
 
-		maxAttempts := 10  // transceiver's max # of retry attempts after failure before exiting
+		maxAttempts := 10 // transceiver's max # of retry attempts after failure before exiting
 		attempt := 0
 		var err error
 		for !shuttingDown() && (attempt < maxAttempts) {
@@ -124,13 +126,13 @@ func setupAmqp(url string, heartbeat time.Duration, exchange string, exchangeTyp
 
 	Log.Debugf("Declaring AMQP %s %s exchange: %s", durable, exchangeType, exchange)
 	err = ch.ExchangeDeclare(
-		exchange,	// name
-		exchangeType,	// type
-		durable,	// durable
-		false,		// auto-deleted
-		false,		// internal
-		false,		// no-wait
-		nil,		// arguments
+		exchange,     // name
+		exchangeType, // type
+		durable,      // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
 	)
 	if err != nil {
 		Log.Warningf("Failed to declare AMQP %s %s exchange: %s; %s", durable, exchangeType, exchange, err)
