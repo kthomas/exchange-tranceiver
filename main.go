@@ -23,13 +23,7 @@ var (
 	CurrencyPairs = map[string]*StreamingDataSource{
 		"BTC-USD": GdaxFactory("BTC", "USD"),
 		"ETH-USD": GdaxFactory("ETH", "USD"),
-		"ETH-BTC": GdaxFactory("ETH", "BTC"),
 		"LTC-USD": GdaxFactory("LTC", "USD"),
-		"LTC-BTC": GdaxFactory("LTC", "BTC"),
-
-		// "EUR-USD": OandaFactory("EUR", "USD"),
-		// "USD-CNY": OandaFactory("USD", "CNY"),
-		// "USD-JPY": OandaFactory("USD", "JPY"),
 	}
 )
 

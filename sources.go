@@ -15,12 +15,12 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 	currencyPair := fmt.Sprintf("%s-%s", base, counter)
 	return &StreamingDataSource{
 		DestinationAmqpConfig: &amqputil.AmqpConfig{
-			AmqpUrl: os.Getenv("AMQP_URL"),
-			AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
-			AmqpExchange: "ticker",
-			AmqpExchangeType: "topic",
+			AmqpUrl:             os.Getenv("AMQP_URL"),
+			AmqpBindingKey:      fmt.Sprintf("currency.%s", currencyPair),
+			AmqpExchange:        "ticker",
+			AmqpExchangeType:    "topic",
 			AmqpExchangeDurable: true,
-			AmqpQueue: currencyPair,
+			AmqpQueue:           currencyPair,
 		},
 
 		Stream: func(ch chan *[]byte) error {
@@ -31,7 +31,7 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 			} else {
 				defer wsConn.Close()
 				subscribe := map[string]interface{}{
-					"type": "subscribe",
+					"type":        "subscribe",
 					"product_ids": []string{currencyPair},
 				}
 				if err := wsConn.WriteJSON(subscribe); err != nil {
@@ -46,7 +46,7 @@ func GdaxFactory(base string, counter string) *StreamingDataSource {
 							break
 						} else {
 							Log.Debugf("Received message on GDAX websocket: %s", message)
-							ch <-&message
+							ch <- &message
 						}
 					}
 				}
@@ -60,12 +60,12 @@ func OandaFactory(base string, counter string) *StreamingDataSource {
 	currencyPair := fmt.Sprintf("%s-%s", base, counter)
 	return &StreamingDataSource{
 		DestinationAmqpConfig: &amqputil.AmqpConfig{
-			AmqpUrl: os.Getenv("AMQP_URL"),
-			AmqpBindingKey: fmt.Sprintf("currency.%s", currencyPair),
-			AmqpExchange: "ticker",
-			AmqpExchangeType: "topic",
+			AmqpUrl:             os.Getenv("AMQP_URL"),
+			AmqpBindingKey:      fmt.Sprintf("currency.%s", currencyPair),
+			AmqpExchange:        "ticker",
+			AmqpExchangeType:    "topic",
 			AmqpExchangeDurable: true,
-			AmqpQueue: currencyPair,
+			AmqpQueue:           currencyPair,
 		},
 
 		Stream: func(ch chan *[]byte) error {
@@ -104,7 +104,7 @@ func OandaFactory(base string, counter string) *StreamingDataSource {
 							break
 						} else {
 							Log.Debugf("Received message from OANDA stream: %s", message)
-							ch <-&message
+							ch <- &message
 						}
 					}
 				}

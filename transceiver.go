@@ -10,12 +10,12 @@ import (
 
 type StreamingDataSource struct {
 	DestinationAmqpConfig *amqputil.AmqpConfig
-	Stream func(chan *[]byte) error  // implementations should be blocking
+	Stream                func(chan *[]byte) error // implementations should be blocking
 }
 
 type Transceiver struct {
 	dataSource *StreamingDataSource
-	publisher *amqputil.Publisher
+	publisher  *amqputil.Publisher
 
 	log *logger.Logger
 
